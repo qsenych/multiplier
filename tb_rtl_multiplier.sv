@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module tb_multiplier;
+module tb_rtl_multiplier;
     logic CLK, EN_mult, EN_blockRead, rst_n;
     logic [15:0] mult_input0, mult_input1;
     logic RDY_mult, EN_readMem, EN_writeMem, VALID_memVal;
@@ -9,7 +9,7 @@ module tb_multiplier;
 
     int stored_val[100];
 
-    localparam NUM_ITERS = 1;
+    localparam NUM_ITERS = 10;
 	localparam CLK_PERIOD = 2.5;//400MHz clock, set to 1.25 for 800MHz
 	localparam HALF_CLK_PERIOD = CLK_PERIOD / 2;//400MHz clock, set to 1.25 for 800MHz
 
@@ -47,11 +47,16 @@ module tb_multiplier;
 
 		#CLK_PERIOD;
 		#CLK_PERIOD;
+		#CLK_PERIOD;
+		#CLK_PERIOD;
 		rst_n = 1;
+		#CLK_PERIOD;
+		#CLK_PERIOD;
 
         wait(RDY_mult === 1'b1); #HALF_CLK_PERIOD;
 
         for (int j = 1; j < NUM_ITERS; j++) begin
+			$display("========== Starting iter %d =========", j);
             memfill(j*2);
             readmem();
         end
@@ -60,10 +65,12 @@ module tb_multiplier;
 
     task automatic memfill (input int k); 
         int i = 0;
+		$display("memfill");
         EN_mult = 1'b1;
         mult_input0 = 16'd6;
         mult_input1 = 16'd4;
         stored_val[0] = mult_input0 * mult_input1;
+
 
         while (RDY_mult) begin
             #CLK_PERIOD;
@@ -80,16 +87,17 @@ module tb_multiplier;
         EN_blockRead = 1'b1;
 
         wait(VALID_memVal == 1'b1);
+		$display("readmem");
 
         EN_blockRead = 1'b0;
         for (int i = 0; i < 71; i++) begin
-            #CLK_PERIOD;
             if (i < 64) begin
                 assert(readMem_val == stored_val[i]) 
                 else $error("readMem_val = %d, stored_val[%d] = %d", 
                             readMem_val, i, stored_val[i]);
             end
+            #CLK_PERIOD;
         end
     endtask
 
-endmodule: tb_multiplier
+endmodule: tb_rtl_multiplier

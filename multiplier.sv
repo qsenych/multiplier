@@ -21,7 +21,8 @@ module multiplier #(parameter N = 32) (
 
     logic mem_full_flag;
 
-    logic [N - 1:0] pipe1_op0, pipe1_op1, pipe2_val;
+    logic [N/2 - 1:0] pipe1_op0, pipe1_op1, pipe1_op2, pipe1_op3;
+    logic [N - 1:0] pipe2_val;
     logic pipe1_en;
     logic pipe2_en;
 
@@ -35,18 +36,30 @@ module multiplier #(parameter N = 32) (
     always_ff @(posedge CLK) begin
 		if (!rst_n) begin
 			curr_state <= INIT;
+
 			pipe1_en <= 0;
 			pipe1_op0 <= 0;
 			pipe1_op1 <= 0;
+			pipe1_op2 <= 0;
+			pipe1_op3 <= 0;
 			pipe2_val <= 0;
+
+			mem_full_flag <= 1'b0;
+			write_addr_reg <= 6'b0;
+			read_addr_reg <= 6'b0;
 		end else begin
 			curr_state <= next_state;
 
 			pipe1_op0 <= mult_input0[7:0] * mult_input1[7:0];
 			pipe1_op1 <= mult_input0[15:8] * mult_input1[15:8];
+			pipe1_op2 <= mult_input0[7:0] * mult_input1[15:8];
+			pipe1_op3 <= mult_input0[15:8] * mult_input1[7:0];
 			pipe1_en <= EN_mult;
 
-			pipe2_val <= pipe1_op0 + (pipe1_op1 << 8);
+			pipe2_val <= {pipe1_op1, 16'b0} +
+						 {8'b0, pipe1_op2, 8'b0} +
+						 {8'b0, pipe1_op3, 8'b0} +
+						 pipe1_op0;
 			pipe2_en <= pipe1_en;
 
 			valid_read_reg <= (curr_state == READ);
