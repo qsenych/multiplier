@@ -1,7 +1,7 @@
-`timescale 1ps / 1ps
+`timescale 1ns / 1ps
 
 module tb_multiplier;
-    logic clk, EN_mult, EN_blockRead;
+    logic CLK, EN_mult, EN_blockRead;
     logic [15:0] mult_input0, mult_input1;
     logic RDY_mult, EN_readMem, EN_writeMem, VALID_memVal;
     logic [31:0] writeMem_val, readMem_val, memVal_data;
@@ -12,7 +12,7 @@ module tb_multiplier;
     localparam NUM_ITERS = 10;
 
     multiplier mult (
-        .clk(clk), 
+        .CLK(CLK), 
         .EN_mult(EN_mult), 
         .EN_blockRead(EN_blockRead),
         .mult_input0(mult_input0), 
@@ -29,19 +29,19 @@ module tb_multiplier;
     );
 
     memory_wrapper_2port #(.WIDTH(32)) mem (
-        .clkA(clk), .aA(readMem_addr), .cenA(~EN_readMem), .q(readMem_val),
-        .clkB(clk), .aB(writeMem_addr), .cenB(~EN_writeMem), .d(writeMem_val)
+        .clkA(CLK), .aA(readMem_addr), .cenA(~EN_readMem), .q(readMem_val),
+        .clkB(CLK), .aB(writeMem_addr), .cenB(~EN_writeMem), .d(writeMem_val)
         ); 
 
-    always begin #10 clk = ~clk; end
+    always begin #2.5 CLK = ~CLK; end
     initial begin
-        clk = 0;
+        CLK = 0;
         EN_mult = 0;
         EN_blockRead = 0;
         mult_input0 = 0;
         mult_input1 = 0;
 
-        wait(RDY_mult === 1'b1); #10;
+        wait(RDY_mult === 1'b1); #1.25;
 
         for (int j = 1; j < NUM_ITERS; j++) begin
             memfill(j*2);
@@ -58,7 +58,7 @@ module tb_multiplier;
         stored_val[0] = mult_input0 * mult_input1;
 
         while (RDY_mult) begin
-            #20;
+            #2.5;
             if (i >= 63) EN_mult = 1'b0;
             mult_input0 = i;
             mult_input1 = k;
@@ -75,7 +75,7 @@ module tb_multiplier;
 
         EN_blockRead = 1'b0;
         for (int i = 0; i < 71; i++) begin
-            #20;
+            #2.5;
             if (i < 64) begin
                 assert(readMem_val == stored_val[i]) 
                 else $error("readMem_val = %d, stored_val[%d] = %d", 

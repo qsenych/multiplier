@@ -1,5 +1,5 @@
 module multiplier #(parameter N = 32) (
-    input logic clk, EN_mult, EN_blockRead,
+    input logic CLK, EN_mult, EN_blockRead,
     input logic [15:0] mult_input0, 
     input logic [15:0] mult_input1,
     input logic [N - 1:0] readMem_val,
@@ -36,7 +36,7 @@ module multiplier #(parameter N = 32) (
     // readMem_addr starts at 0, increments by 1 once reading starts
     //      Can't change once startec
 
-    always_ff @(posedge clk) begin
+    always_ff @(posedge CLK) begin
         curr_state <= next_state;
 
         pipe1_val <= EN_mult ? mult_result : pipe1_val;
@@ -59,7 +59,7 @@ module multiplier #(parameter N = 32) (
                     write_addr_reg <= write_addr_reg + 1;
                     if (write_addr_reg == 6'h3f) begin
                         read_addr_reg <= 6'b0;
-                        mem_full_flag = 1'b1;
+                        mem_full_flag <= 1'b1;
                     end
                 end
             end
