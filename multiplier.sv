@@ -21,10 +21,7 @@ module multiplier #(parameter N = 32) (
 
     logic mem_full_flag;
 
-    // logic [N - 1:0] mult_result;
-    // assign mult_result = mult_input0 * mult_input1;
-
-    logic [N - 1:0] pipe1_op0, pipe2_op1;
+    logic [N - 1:0] pipe1_op0, pipe1_op1, pipe2_val;
     logic pipe1_en;
     logic pipe2_en;
 
@@ -39,10 +36,8 @@ module multiplier #(parameter N = 32) (
     always_ff @(posedge CLK) begin
         curr_state <= next_state;
 
-        // pipe1_val <= EN_mult ? mult_result : pipe1_val;
-        
-        pipe1_op0 = mult_input0;
-        pipe1_op1 = mult_input1;
+        pipe1_op0 <= mult_input0;
+        pipe1_op1 <= mult_input1;
         pipe1_en <= EN_mult;
 
         pipe2_val <= pipe1_op0 * pipe1_op1;

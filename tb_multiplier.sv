@@ -33,7 +33,7 @@ module tb_multiplier;
         .clkB(CLK), .aB(writeMem_addr), .cenB(~EN_writeMem), .d(writeMem_val)
         ); 
 
-    always begin #2.5 CLK = ~CLK; end
+    always begin #1.25 CLK = ~CLK; end //400MHz clock, set to 0.625 for 800MHz
     initial begin
         CLK = 0;
         EN_mult = 0;
