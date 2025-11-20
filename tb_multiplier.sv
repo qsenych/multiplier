@@ -1,7 +1,7 @@
 `timescale 1ns / 1ps
 
 module tb_multiplier;
-    logic CLK, EN_mult, EN_blockRead;
+    logic CLK, EN_mult, EN_blockRead, rst_n;
     logic [15:0] mult_input0, mult_input1;
     logic RDY_mult, EN_readMem, EN_writeMem, VALID_memVal;
     logic [31:0] writeMem_val, readMem_val, memVal_data;
@@ -10,9 +10,12 @@ module tb_multiplier;
     int stored_val[100];
 
     localparam NUM_ITERS = 10;
+	localparam CLK_PERIOD = 2.5;//400MHz clock, set to 1.25 for 800MHz
+	localparam HALF_CLK_PERIOD = CLK_PERIOD / 2;//400MHz clock, set to 1.25 for 800MHz
 
     multiplier mult (
         .CLK(CLK), 
+		.rst_n(rst_n),
         .EN_mult(EN_mult), 
         .EN_blockRead(EN_blockRead),
         .mult_input0(mult_input0), 
@@ -33,15 +36,20 @@ module tb_multiplier;
         .clkB(CLK), .aB(writeMem_addr), .cenB(~EN_writeMem), .d(writeMem_val)
         ); 
 
-    always begin #1.25 CLK = ~CLK; end //400MHz clock, set to 0.625 for 800MHz
+    always begin #HALF_CLK_PERIOD CLK = ~CLK; end 
     initial begin
         CLK = 0;
+		rst_n = 0;
         EN_mult = 0;
         EN_blockRead = 0;
         mult_input0 = 0;
         mult_input1 = 0;
 
-        wait(RDY_mult === 1'b1); #1.25;
+		#CLK_PERIOD;
+		#CLK_PERIOD;
+		rst_n = 1;
+
+        wait(RDY_mult === 1'b1); #HALF_CLK_PERIOD;
 
         for (int j = 1; j < NUM_ITERS; j++) begin
             memfill(j*2);
@@ -58,7 +66,7 @@ module tb_multiplier;
         stored_val[0] = mult_input0 * mult_input1;
 
         while (RDY_mult) begin
-            #2.5;
+            #CLK_PERIOD;
             if (i >= 63) EN_mult = 1'b0;
             mult_input0 = i;
             mult_input1 = k;
@@ -75,7 +83,7 @@ module tb_multiplier;
 
         EN_blockRead = 1'b0;
         for (int i = 0; i < 71; i++) begin
-            #2.5;
+            #CLK_PERIOD;
             if (i < 64) begin
                 assert(readMem_val == stored_val[i]) 
                 else $error("readMem_val = %d, stored_val[%d] = %d", 

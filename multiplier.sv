@@ -1,5 +1,5 @@
 module multiplier #(parameter N = 32) (
-    input logic CLK, EN_mult, EN_blockRead,
+    input logic CLK, EN_mult, EN_blockRead, rst_n,
     input logic [15:0] mult_input0, 
     input logic [15:0] mult_input1,
     input logic [N - 1:0] readMem_val,
@@ -32,54 +32,59 @@ module multiplier #(parameter N = 32) (
     // writeMem_addr starts at 0, increments by 1 every multiplication
     // readMem_addr starts at 0, increments by 1 once reading starts
     //      Can't change once startec
-
     always_ff @(posedge CLK) begin
-        curr_state <= next_state;
+		if (!rst_n) begin
+			curr_state <= INIT;
+			pipe1_en <= 0;
+		end else begin
+			curr_state <= next_state;
 
-        pipe1_op0 <= mult_input0;
-        pipe1_op1 <= mult_input1;
-        pipe1_en <= EN_mult;
+			pipe1_op0 <= mult_input0;
+			pipe1_op1 <= mult_input1;
+			pipe1_en <= EN_mult;
 
-        pipe2_val <= pipe1_op0 * pipe1_op1;
-        pipe2_en <= pipe1_en;
+			pipe2_val <= pipe1_op0 * pipe1_op1;
+			pipe2_en <= pipe1_en;
 
-        valid_read_reg <= (curr_state == READ);
+			valid_read_reg <= (curr_state == READ);
 
-        case (curr_state)
-            INIT: begin
-                write_addr_reg <= 6'b0;
-                read_addr_reg <= 6'b0;
-                mem_full_flag <= 1'b0;
-            end
+			case (curr_state)
+				INIT: begin
+					write_addr_reg <= 6'b0;
+					read_addr_reg <= 6'b0;
+					mem_full_flag <= 1'b0;
+				end
 
-            IDLE_WRITE: begin
-                if (pipe2_en && ~mem_full_flag) begin
-                    write_addr_reg <= write_addr_reg + 1;
-                    if (write_addr_reg == 6'h3f) begin
-                        read_addr_reg <= 6'b0;
-                        mem_full_flag <= 1'b1;
-                    end
-                end
-            end
+				IDLE_WRITE: begin
+					if (pipe2_en && ~mem_full_flag) begin
+						write_addr_reg <= write_addr_reg + 1;
+						if (write_addr_reg == 6'h3f) begin
+							read_addr_reg <= 6'b0;
+							mem_full_flag <= 1'b1;
+						end
+					end
+				end
 
-            FULL: begin
-                write_addr_reg <= 6'b0;
-            end
+				FULL: begin
+					write_addr_reg <= 6'b0;
+				end
 
-            READ: begin
-                // reset the addresses and memory when complete
-                if (read_addr_reg == 6'h3f) begin
-                    write_addr_reg <= 6'b0;
-                    mem_full_flag <= 1'b0;
-                end else begin
-                    read_addr_reg <= read_addr_reg + 1;
-                end
-            end
+				READ: begin
+					// reset the addresses and memory when complete
+					if (read_addr_reg == 6'h3f) begin
+						write_addr_reg <= 6'b0;
+						mem_full_flag <= 1'b0;
+					end else begin
+						read_addr_reg <= read_addr_reg + 1;
+					end
+				end
 
-            default: begin
-                // nothing happens
-            end
-        endcase 
+				default: begin
+					// next_state <= INIT;
+					// nothing happens
+				end
+			endcase 
+		end
     end
 
     always_comb begin
