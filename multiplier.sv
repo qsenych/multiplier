@@ -36,14 +36,17 @@ module multiplier #(parameter N = 32) (
 		if (!rst_n) begin
 			curr_state <= INIT;
 			pipe1_en <= 0;
+			pipe1_op0 <= 0;
+			pipe1_op1 <= 0;
+			pipe2_val <= 0;
 		end else begin
 			curr_state <= next_state;
 
-			pipe1_op0 <= mult_input0;
-			pipe1_op1 <= mult_input1;
+			pipe1_op0 <= mult_input0[7:0] * mult_input1[7:0];
+			pipe1_op1 <= mult_input0[15:8] * mult_input1[15:8];
 			pipe1_en <= EN_mult;
 
-			pipe2_val <= pipe1_op0 * pipe1_op1;
+			pipe2_val <= pipe1_op0 + (pipe1_op1 << 8);
 			pipe2_en <= pipe1_en;
 
 			valid_read_reg <= (curr_state == READ);
