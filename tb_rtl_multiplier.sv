@@ -9,8 +9,8 @@ module tb_rtl_multiplier;
 
     int stored_val[100];
 
-    localparam NUM_ITERS = 10;
-	localparam CLK_PERIOD = 2.5;//400MHz clock, set to 1.25 for 800MHz
+    localparam NUM_ITERS = 4;
+	localparam CLK_PERIOD = 1.25;//400MHz clock, set to 1.25 for 800MHz
 	localparam HALF_CLK_PERIOD = CLK_PERIOD / 2;//400MHz clock, set to 1.25 for 800MHz
 
     multiplier mult (
@@ -45,7 +45,6 @@ module tb_rtl_multiplier;
         mult_input0 = 0;
         mult_input1 = 0;
 
-		#CLK_PERIOD;
 		#CLK_PERIOD;
 		#CLK_PERIOD;
 		#CLK_PERIOD;

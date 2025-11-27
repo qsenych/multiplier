@@ -21,10 +21,16 @@ module multiplier #(parameter N = 32) (
 
     logic mem_full_flag;
 
-    logic [N/2 - 1:0] pipe1_op0, pipe1_op1, pipe1_op2, pipe1_op3;
-    logic [N - 1:0] pipe2_val;
-    logic pipe1_en;
-    logic pipe2_en;
+	logic [7:0] p0r0, p0r1, p0r2, p0r3, p0r4, p0r5, p0r6, p0r7;
+	logic [7:0] p0r8, p0r9, p0r10, p0r11, p0r12, p0r13, p0r14, p0r15;
+
+	logic [19:0] p1sum0, p1sum1, p1sum2, p1sum3;
+
+	logic [31:0] p2sum0, p2sum1;
+	
+	logic [31:0] p3out;
+
+    logic pipe0_en, pipe1_en, pipe2_en;
 
     logic valid_read_reg;
 
@@ -37,12 +43,9 @@ module multiplier #(parameter N = 32) (
 		if (!rst_n) begin
 			curr_state <= INIT;
 
+			pipe0_en <= 0;
 			pipe1_en <= 0;
-			pipe1_op0 <= 0;
-			pipe1_op1 <= 0;
-			pipe1_op2 <= 0;
-			pipe1_op3 <= 0;
-			pipe2_val <= 0;
+			pipe2_en <= 0;
 
 			mem_full_flag <= 1'b0;
 			write_addr_reg <= 6'b0;
@@ -50,28 +53,65 @@ module multiplier #(parameter N = 32) (
 		end else begin
 			curr_state <= next_state;
 
-			pipe1_op0 <= mult_input0[7:0] * mult_input1[7:0];
-			pipe1_op1 <= mult_input0[15:8] * mult_input1[15:8];
-			pipe1_op2 <= mult_input0[7:0] * mult_input1[15:8];
-			pipe1_op3 <= mult_input0[15:8] * mult_input1[7:0];
-			pipe1_en <= EN_mult;
-
-			pipe2_val <= {pipe1_op1, 16'b0} +
-						 {8'b0, pipe1_op2, 8'b0} +
-						 {8'b0, pipe1_op3, 8'b0} +
-						 pipe1_op0;
+			pipe0_en <= EN_mult;
+			pipe1_en <= pipe0_en;
 			pipe2_en <= pipe1_en;
 
-			valid_read_reg <= (curr_state == READ);
+			p0r0 <= mult_input0[3:0]  * mult_input1[3:0];
+			p0r1 <= mult_input0[3:0]  * mult_input1[7:4];
+			p0r2 <= mult_input0[3:0]  * mult_input1[11:8];
+			p0r3 <= mult_input0[3:0]  * mult_input1[15:12];
+			p0r4 <= mult_input0[7:4]  * mult_input1[3:0];
+			p0r5 <= mult_input0[7:4]  * mult_input1[7:4];
+			p0r6 <= mult_input0[7:4]  * mult_input1[11:8];
+			p0r7 <= mult_input0[7:4]  * mult_input1[15:12];
+			p0r8 <= mult_input0[11:8]  * mult_input1[3:0];
+			p0r9 <= mult_input0[11:8]  * mult_input1[7:4];
+			p0r10 <= mult_input0[11:8]  * mult_input1[11:8];
+			p0r11 <= mult_input0[11:8]  * mult_input1[15:12];
+			p0r12 <= mult_input0[15:12]  * mult_input1[3:0];
+			p0r13 <= mult_input0[15:12]  * mult_input1[7:4];
+			p0r14 <= mult_input0[15:12]  * mult_input1[11:8];
+			p0r15 <= mult_input0[15:12]  * mult_input1[15:12];
+
+			p1sum0 <= {12'b0, p0r0} +
+					  {8'b0, p0r1, 4'b0} +
+					  {4'b0, p0r2, 8'b0} +
+					  {p0r3, 12'b0};
+
+			p1sum1 <= {12'b0, p0r4} +
+					  {8'b0, p0r5, 4'b0} +
+					  {4'b0, p0r6, 8'b0} +
+					  {p0r7, 12'b0};
+
+			p1sum2 <= {12'b0, p0r8} +
+					  {8'b0, p0r9, 4'b0} +
+					  {4'b0, p0r10, 8'b0} +
+					  {p0r11, 12'b0};
+
+			p1sum3 <= {12'b0, p0r12} +
+					  {8'b0, p0r13, 4'b0} +
+					  {4'b0, p0r14, 8'b0} +
+					  {p0r15, 12'b0};
+
+
+			p2sum0 <= {8'b0, ({4'b0, p1sum0} + {p1sum1, 4'b0})};
+			p2sum1 <= ({4'b0, p1sum2} + {p1sum3, 4'b0}) << 8;
+
+			p3out <= p2sum0 + p2sum1;
+
+			valid_read_reg <= 1'b0;
 
 			case (curr_state)
 				INIT: begin
+					valid_read_reg <= 1'b0;
 					write_addr_reg <= 6'b0;
 					read_addr_reg <= 6'b0;
 					mem_full_flag <= 1'b0;
 				end
 
 				IDLE_WRITE: begin
+					valid_read_reg <= 1'b0;
 					if (pipe2_en && ~mem_full_flag) begin
 						write_addr_reg <= write_addr_reg + 1;
 						if (write_addr_reg == 6'h3f) begin
@@ -87,6 +127,7 @@ module multiplier #(parameter N = 32) (
 
 				READ: begin
 					// reset the addresses and memory when complete
+					valid_read_reg <= 1'b1;
 					if (read_addr_reg == 6'h3f) begin
 						write_addr_reg <= 6'b0;
 						mem_full_flag <= 1'b0;
@@ -108,7 +149,7 @@ module multiplier #(parameter N = 32) (
         RDY_mult = 1'b0;
         EN_writeMem = 1'b0;
         EN_readMem = 1'b0;
-        writeMem_val = pipe2_val;
+        writeMem_val = p3out;
 
         writeMem_addr = write_addr_reg;
         readMem_addr = read_addr_reg;
@@ -154,4 +195,5 @@ module multiplier #(parameter N = 32) (
                 next_state = INIT;
         endcase
     end
+
 endmodule: multiplier
