@@ -30,7 +30,7 @@ module multiplier #(parameter N = 32) (
 	
 	logic [31:0] p3out;
 
-    logic pipe0_en, pipe1_en, pipe2_en;
+    logic pipe0_en, pipe1_en, pipe2_en, pipe3_en;
 
     logic valid_read_reg;
 
@@ -46,6 +46,7 @@ module multiplier #(parameter N = 32) (
 			pipe0_en <= 0;
 			pipe1_en <= 0;
 			pipe2_en <= 0;
+			pipe3_en <= 0;
 
 			mem_full_flag <= 1'b0;
 			write_addr_reg <= 6'b0;
@@ -56,6 +57,7 @@ module multiplier #(parameter N = 32) (
 			pipe0_en <= EN_mult;
 			pipe1_en <= pipe0_en;
 			pipe2_en <= pipe1_en;
+			pipe3_en <= pipe2_en;
 
 			p0r0 <= mult_input0[3:0]  * mult_input1[3:0];
 			p0r1 <= mult_input0[3:0]  * mult_input1[7:4];
@@ -112,7 +114,7 @@ module multiplier #(parameter N = 32) (
 
 				IDLE_WRITE: begin
 					valid_read_reg <= 1'b0;
-					if (pipe2_en && ~mem_full_flag) begin
+					if (pipe3_en && ~mem_full_flag) begin
 						write_addr_reg <= write_addr_reg + 1;
 						if (write_addr_reg == 6'h3f) begin
 							read_addr_reg <= 6'b0;
@@ -166,7 +168,7 @@ module multiplier #(parameter N = 32) (
             IDLE_WRITE: begin
                 RDY_mult = 1'b1;
 
-                if (pipe2_en && ~mem_full_flag)
+                if (pipe3_en && ~mem_full_flag)
                     EN_writeMem = 1'b1;
 
                 if (mem_full_flag) begin 
