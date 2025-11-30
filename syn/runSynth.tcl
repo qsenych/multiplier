@@ -1,11 +1,11 @@
 # Setting the vars/folder to be used throughout flow
-set OUT_FOLDER /ubc/ece/home/ss/grads/avilash/Projects/elec402-intro-to-vlsi/multiplier-module/syn/output
-set SOURCE_FOLDER /ubc/ece/home/ss/grads/avilash/Projects/elec402-intro-to-vlsi/multiplier-module
+set OUT_FOLDER /ubc/ece/home/ugrads/q/qsenych/402ELEC/p3/syn/output
+set SOURCE_FOLDER /ubc/ece/home/ugrads/q/qsenych/402ELEC/p3/src/
 
 set LIB_FOLDER /ubc/ece/data/cmc2/kits/GPDK45/gsclib045_all_v4.4/gsclib045/timing
 
-set TOP_LEVEL "CHANGE_THIS" 
-set RUN_NAME "CHANGE_THIS OR DELETE THIS IF NOT REQUIRED"
+set TOP_LEVEL "mkMACBuff" 
+set RUN_NAME "p3"
 
 # 1) Setting the library search path
 set_db lib_search_path [concat [get_db lib_search_path] $SOURCE_FOLDER $LIB_FOLDER ]

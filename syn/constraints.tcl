@@ -79,3 +79,31 @@ if { $RUN_NAME == "v4" } {
 	#set_false_path -from io_virtual_clk -to $clk_pin
 	#set_false_path -from $clk_pin -to io_virtual_clk
 }
+
+if { $RUN_NAME == "p3" } {
+	set clk_pin CLK 
+	set rstn_pin RST_N 
+
+	set clk_period 2
+
+	set quarter [ expr $clk_period / 4.0 ]
+	set eighths [ expr $clk_period / 8.0 ]
+	set sixteenths [ expr $clk_period / 16.0 ] 
+
+	set inputs_no_clk_rstn [remove_from_collection [all_inputs] [get_ports "$clk_pin $rstn_pin"]]
+	
+	create_clock [get_ports $clk_pin] -name $clk_pin -period $clk_period
+
+	set_clock_uncertainty [expr $quarter ] [get_clocks $clk_pin]
+	set_clock_latency [expr $quarter] [get_clocks $clk_pin]
+
+	set_driving_cell -lib_cell DFFX1 -input_transition_rise [expr $eighths] -input_transition_fall [expr $eighths] $inputs_no_clk_rstn
+
+	set_load [expr [load_of [get_lib_pins */NAND2X4/A]] * 4] [all_outputs]
+	set_max_fanout 4 $inputs_no_clk_rstn
+
+	create_clock -period $clk_period -name io_virtual_clk
+	set_input_delay -max [ $quarter ] -clock io_virtual_clk -add_delay $inputs_no_clk_rstn
+	set_output_delay -max [ $quarter ] -clock io_virtual_clk -add_delay [all_outputs]
+
+}
