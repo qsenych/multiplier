@@ -103,7 +103,7 @@ if { $RUN_NAME == "p3" } {
 	set_max_fanout 4 $inputs_no_clk_rstn
 
 	create_clock -period $clk_period -name io_virtual_clk
-	set_input_delay -max [ $quarter ] -clock io_virtual_clk -add_delay $inputs_no_clk_rstn
-	set_output_delay -max [ $quarter ] -clock io_virtual_clk -add_delay [all_outputs]
+	set_input_delay -max [ expr $quarter ] -clock io_virtual_clk -add_delay $inputs_no_clk_rstn
+	set_output_delay -max [ expr $quarter ] -clock io_virtual_clk -add_delay [all_outputs]
 
 }

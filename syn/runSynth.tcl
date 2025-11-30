@@ -14,8 +14,9 @@ set_db library "slow_vdd1v0_basicCells.lib"
 # Here: report_units -> LIBRARY                slow_vdd1v0; Time_unit              :1000ps ...
 
 # 2) Reading the verilog codes
-read_hdl -sv ./${TOP_LEVEL}.sv 
-elaborate
+read_hdl -sv ../src/${TOP_LEVEL}.sv 
+elaborate ${TOP_LEVEL}
+current_design ${TOP_LEVEL}
 check_design -unresolved
 # Here: get_db current_design -> should show :$TOP_LEVEL
 
