@@ -10,9 +10,6 @@ module tb_mac;
 
     int stored_val[100];
 
-    localparam NUM_ITERS = 4;
-	localparam CLK_PERIOD = 2;//500 MHz clock
-	localparam HALF_CLK_PERIOD = CLK_PERIOD / 2;//400MHz clock, set to 1.25 for 800MHz
 
     mac dut(
         .CLK(CLK), 
