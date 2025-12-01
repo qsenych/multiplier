@@ -1,3 +1,5 @@
+`define N 31
+
 module mkMACBuff (
     CLK, RST_N,
     //
@@ -15,32 +17,32 @@ module mkMACBuff (
     //
     VALID_memVal, memVal_data
     );
-input CLK, RST_N;
+input logic CLK, RST_N;
 
-input EN_mac;
-output RDY_mac;
-input [15:0] mac_vectA_0;
-input [15:0] mac_vectB_0;
-input [15:0] mac_vectA_1;
-input [15:0] mac_vectB_1;
-input [15:0] mac_vectA_2;
-input [15:0] mac_vectB_2;
-input [15:0] mac_vectA_3;
-input [15:0] mac_vectB_3;
+input logic EN_mac;
+output logic RDY_mac;
+input logic [15:0] mac_vectA_0;
+input logic [15:0] mac_vectB_0;
+input logic [15:0] mac_vectA_1;
+input logic [15:0] mac_vectB_1;
+input logic [15:0] mac_vectA_2;
+input logic [15:0] mac_vectB_2;
+input logic [15:0] mac_vectA_3;
+input logic [15:0] mac_vectB_3;
 
-output EN_writeMem;
-output [5:0] writeMem_addr;
-output [N:0] writeMem_val;
+output logic EN_writeMem;
+output logic [5:0] writeMem_addr;
+output logic [`N:0] writeMem_val;
 
-input EN_blockRead;
-output RDY_blockRead;
+input logic EN_blockRead;
+output logic RDY_blockRead;
 
-output EN_readMem;
-output [5:0] readMem_addr;
-input [N:0] readMem_val;
+output logic EN_readMem;
+output logic [5:0] readMem_addr;
+input logic [`N:0] readMem_val;
 
-output VALID_memVal;
-output [N:0] memVal_data;
+output logic VALID_memVal;
+output logic [`N:0] memVal_data;
 
 // CODE HERE>
 
@@ -82,8 +84,8 @@ logic [31:0] p2sum0m3, p2sum1m3;
 logic [31:0] p3outm3;
 
 
-logic [33:0] p4val_m0m1, p4val_m2m3;
-logic [33:0] p5out;
+logic [`N:0] p4val_m0m1, p4val_m2m3;
+logic [`N:0] p5out;
 
 logic pipe0_en, pipe1_en, pipe2_en, pipe3_en, pipe4_en, pipe5_en;
 

@@ -7,7 +7,7 @@
 module mkMACBuff_TB;
 
 localparam NUM_ITERS = 4;
-localparam ADDR_WIDTH = 4;
+localparam ADDR_WIDTH = 6;
 localparam ADDR_DEPTH = 64;
 reg CLK;
 reg RESET;
@@ -15,7 +15,7 @@ wire RST_N;
 assign RST_N = ~RESET;
 
 // CLK
-always `HALF_CLK_DELAY CLK = ~CLK; 
+always begin `HALF_CLK_DELAY; CLK = ~CLK; end
 
 // ---------------------------------------------------------------------------------
 
@@ -49,7 +49,7 @@ mkMACBuff mkMACBuff(
     );
     
 // memory wrapper
-memory_wrapper_2port #( .DEPTH(ADDR_DEPTH), .LOGDEPTH(ADDR_WIDTH), .WIDTH(2*OPERAND_WIDTH)) 
+memory_wrapper_2port #( .DEPTH(64), .LOGDEPTH(6), .WIDTH(32)) 
             memory_2port ( 
                 .clkA(CLK), .aA(readMem_addr), .cenA(~EN_readMem), .q(readMem_val),
                 .clkB(CLK), .aB(writeMem_addr), .cenB(~EN_writeMem), .d(writeMem_val)
@@ -99,8 +99,8 @@ begin
 
     for (j = 0; j < NUM_ITERS; j = j + 1) begin
         $display("========== Starting iter %d =========", j);
-        if (j % 2 == 0) memfill_rand();
-        else memfill(j);
+        if (j % 2 == 0) memfill(j);
+        else memfill_rand();
         readmem();
     end
 end
@@ -150,7 +150,7 @@ task automatic memfill (input int unsigned k);
         mac_vectB_2 = j2; 
         mac_vectB_3 = j3; 
         stored_val[i] = i0*j0 + i1*j1 + i2*j2 + i3*j3;
-        #CLK_PERIOD;
+        `CLK_DELAY;
         i++;
     end
 endtask
@@ -209,15 +209,15 @@ task automatic readmem();
     $display("readmem");
 
     EN_blockRead = 1'b0;
-    for (int i = 0; i < 64; i++) begin
+    for (int i = 0; i <= 64; i++) begin
+        @(negedge CLK);
         
         if (i < 64) begin
-            assert(readMem_val == stored_val[i]) 
+            assert(readMem_val === stored_val[i]) 
             else $error("readMem_val = %d, stored_val[%d] = %d", 
                         readMem_val, i, stored_val[i]);
         end
-        @(negedge CLK)
     end
 endtask
 
-endmodule: mkMultBuff_TB
+endmodule: mkMACBuff_TB
