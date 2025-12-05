@@ -35,17 +35,24 @@ add wave -label readMem_val -position insertpoint sim:/$TB_NAME/readMem_val
 add wave -label memVal_data -position insertpoint sim:/$TB_NAME/memVal_data
 add wave -label stored_val -position insertpoint sim:/$TB_NAME/stored_val
 add wave -label curr_state -position insertpoint sim:/$TB_NAME/$TOP_LEVEL/curr_state
+add wave -label next_state -position insertpoint sim:/$TB_NAME/$TOP_LEVEL/next_state
+
+add wave -divider pipeline_control
+add wave -label pipe0_en -position insertpoint sim:/$TB_NAME/$TOP_LEVEL/pipe0_en
+add wave -label pipe1_en -position insertpoint sim:/$TB_NAME/$TOP_LEVEL/pipe1_en
+add wave -label pipe2_en -position insertpoint sim:/$TB_NAME/$TOP_LEVEL/pipe2_en
+add wave -label pipe3_en -position insertpoint sim:/$TB_NAME/$TOP_LEVEL/pipe3_en
+add wave -label pipe4_en -position insertpoint sim:/$TB_NAME/$TOP_LEVEL/pipe4_en
+add wave -label pipe5_en -position insertpoint sim:/$TB_NAME/$TOP_LEVEL/pipe5_en
 
 add wave -divider inputs
 add wave -label mac_vectA_0 -position insertpoint sim:/$TB_NAME/mac_vectA_0
-add wave -label mac_vectA_1 -position insertpoint sim:/$TB_NAME/mac_vectA_1
-add wave -label mac_vectA_2 -position insertpoint sim:/$TB_NAME/mac_vectA_2
-add wave -label mac_vectA_3 -position insertpoint sim:/$TB_NAME/mac_vectA_3
 add wave -label mac_vectB_0 -position insertpoint sim:/$TB_NAME/mac_vectB_0
-add wave -label mac_vectB_1 -position insertpoint sim:/$TB_NAME/mac_vectB_1
-add wave -label mac_vectB_2 -position insertpoint sim:/$TB_NAME/mac_vectB_2
-add wave -label mac_vectB_3 -position insertpoint sim:/$TB_NAME/mac_vectB_3
 
-
+add wave -divider sums
+add wave -label p1sum0m0 -position insertpoint sim:/$TB_NAME/$TOP_LEVEL/p1sum0m0
+add wave -label p2sum0m0 -position insertpoint sim:/$TB_NAME/$TOP_LEVEL/p2sum0m0
+add wave -label p3outm0 -position insertpoint sim:/$TB_NAME/$TOP_LEVEL/p3outm0
+add wave -label p4val_m0m1 -position insertpoint sim:/$TB_NAME/$TOP_LEVEL/p4val_m0m1
 add wave -label p5out -position insertpoint sim:/$TB_NAME/$TOP_LEVEL/p5out
-#run -all
+run -all
