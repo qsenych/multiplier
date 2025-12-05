@@ -80,9 +80,10 @@ endtask
 task TASK_reset;
 begin
     RESET = 1'b0;
-    `CLK_DELAY;
+    @(negedge CLK);
     RESET = 1'b1;
-    `CLK_DELAY;
+    @(negedge CLK);
+    @(negedge CLK);
     RESET = 1'b0;
 end
 endtask
@@ -128,6 +129,7 @@ task automatic memfill (input int unsigned k);
     int unsigned j2 = 0;
     int unsigned j3 = 0;
     $display("memfill");
+    @(negedge CLK);
     EN_mac = 1'b1;
 
     while (RDY_mac) begin
@@ -150,7 +152,7 @@ task automatic memfill (input int unsigned k);
         mac_vectB_2 = j2; 
         mac_vectB_3 = j3; 
         stored_val[i] = i0*j0 + i1*j1 + i2*j2 + i3*j3;
-        `CLK_DELAY;
+	@(negedge CLK);
         i++;
     end
 endtask
@@ -168,6 +170,7 @@ task automatic memfill_rand ();
     int unsigned j2 = 0;
     int unsigned j3 = 0;
     $display("memfill_rand");
+    @(negedge CLK);
     EN_mac = 1'b1;
 
     while (RDY_mac) begin
