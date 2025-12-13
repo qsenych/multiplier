@@ -3,6 +3,7 @@
 `define HALF_CLK_DELAY #1;
 `define HALF_CLK_DELAY_MINUS_EDGE_GAP #0.9;
 `define EDGE_GAP #0.1;
+`define N 33
 
 module mkMACBuff_TB;
 
@@ -24,10 +25,10 @@ logic unsigned EN_mac, EN_blockRead;
 logic unsigned [15:0] mac_vectA_0, mac_vectA_1, mac_vectA_2, mac_vectA_3;
 logic unsigned [15:0] mac_vectB_0, mac_vectB_1, mac_vectB_2, mac_vectB_3;
 logic unsigned RDY_mac, EN_readMem, EN_writeMem, VALID_memVal, RDY_blockRead;
-logic unsigned [31:0] writeMem_val, readMem_val, memVal_data;
+logic unsigned [`N:0] writeMem_val, readMem_val, memVal_data;
 logic unsigned [5:0] writeMem_addr, readMem_addr;
 
-logic unsigned [31:0] stored_val[100];
+logic unsigned [`N:0] stored_val[100];
 
 
 // instantiation
@@ -100,8 +101,8 @@ begin
 
     for (j = 0; j < NUM_ITERS; j = j + 1) begin
         $display("========== Starting iter %d =========", j);
-	if (j % 2 == 0) memfill(j + 1);
-        else memfill_rand();
+	// if (j % 2 == 0) memfill(j + 1);
+        memfill_rand();
 
 	readmem();
     end
@@ -193,7 +194,7 @@ task automatic memfill_rand ();
         mac_vectB_1 = j1; 
         mac_vectB_2 = j2; 
         mac_vectB_3 = j3; 
-        stored_val[i] = (i0*j0 + i1*j1 + i2*j2 + i3*j3) & 32'hFFFFFFFF;
+        stored_val[i] = (i0*j0 + i1*j1 + i2*j2 + i3*j3);
         @(posedge CLK); #0.2;
         i++;
 

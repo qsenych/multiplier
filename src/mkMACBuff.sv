@@ -56,32 +56,33 @@ typedef enum logic [1:0]{
 state_t curr_state, next_state;
 
 logic [5:0] write_addr_reg, read_addr_reg;
+logic [6:0] written_vals;
 
 logic mem_full_flag;
 
 logic [7:0] p0r0m0, p0r1m0, p0r2m0, p0r3m0, p0r4m0, p0r5m0, p0r6m0, p0r7m0;
 logic [7:0] p0r8m0, p0r9m0, p0r10m0, p0r11m0, p0r12m0, p0r13m0, p0r14m0, p0r15m0;
 logic [19:0] p1sum0m0, p1sum1m0, p1sum2m0, p1sum3m0;
-logic [23:0] p2sum0m0, p2sum1m0;
-logic [24:0] p3outm0;
+logic [31:0] p2sum0m0, p2sum1m0;
+logic [31:0] p3outm0;
 
 logic [7:0] p0r0m1, p0r1m1, p0r2m1, p0r3m1, p0r4m1, p0r5m1, p0r6m1, p0r7m1;
 logic [7:0] p0r8m1, p0r9m1, p0r10m1, p0r11m1, p0r12m1, p0r13m1, p0r14m1, p0r15m1;
 logic [19:0] p1sum0m1, p1sum1m1, p1sum2m1, p1sum3m1;
-logic [23:0] p2sum0m1, p2sum1m1;
-logic [24:0] p3outm1;
+logic [31:0] p2sum0m1, p2sum1m1;
+logic [31:0] p3outm1;
 
 logic [7:0] p0r0m2, p0r1m2, p0r2m2, p0r3m2, p0r4m2, p0r5m2, p0r6m2, p0r7m2;
 logic [7:0] p0r8m2, p0r9m2, p0r10m2, p0r11m2, p0r12m2, p0r13m2, p0r14m2, p0r15m2;
 logic [19:0] p1sum0m2, p1sum1m2, p1sum2m2, p1sum3m2;
-logic [23:0] p2sum0m2, p2sum1m2;
-logic [24:0] p3outm2;
+logic [31:0] p2sum0m2, p2sum1m2;
+logic [31:0] p3outm2;
 
 logic [7:0] p0r0m3, p0r1m3, p0r2m3, p0r3m3, p0r4m3, p0r5m3, p0r6m3, p0r7m3;
 logic [7:0] p0r8m3, p0r9m3, p0r10m3, p0r11m3, p0r12m3, p0r13m3, p0r14m3, p0r15m3;
 logic [19:0] p1sum0m3, p1sum1m3, p1sum2m3, p1sum3m3;
-logic [23:0] p2sum0m3, p2sum1m3;
-logic [24:0] p3outm3;
+logic [31:0] p2sum0m3, p2sum1m3;
+logic [31:0] p3outm3;
 
 
 logic [`N:0] p4val_m0m1, p4val_m2m3;
@@ -110,6 +111,7 @@ always_ff @(posedge CLK) begin
         mem_full_flag <= 1'b0;
         write_addr_reg <= 6'b0;
         read_addr_reg <= 6'b0;
+        written_vals <= 7'b0;
     end else begin
         curr_state <= next_state;
 
@@ -282,10 +284,15 @@ always_ff @(posedge CLK) begin
                 write_addr_reg <= 6'b0;
                 read_addr_reg <= 6'b0;
                 mem_full_flag <= 1'b0;
+                written_vals <= 7'b0;
             end
 
             IDLE_WRITE: begin
                 valid_read_reg <= 1'b0;
+                if (EN_mac) begin
+                    written_vals <= written_vals + 1;
+                end
+
                 if (pipe5_en && ~mem_full_flag) begin
                     write_addr_reg <= write_addr_reg + 1;
                     if (write_addr_reg == 6'h3f) begin
@@ -297,6 +304,7 @@ always_ff @(posedge CLK) begin
 
             FULL: begin
                 write_addr_reg <= 6'b0;
+                written_vals <= 7'b0;
             end
 
             READ: begin
@@ -344,8 +352,11 @@ always_comb begin
             if (pipe5_en && ~mem_full_flag)
                 EN_writeMem = 1'b1;
 
-            if (mem_full_flag) begin 
+            if (written_vals > 7'h3F)
                 RDY_mac = 1'b0;
+
+            if (mem_full_flag) begin 
+                //RDY_mac = 1'b0;
                 next_state = FULL;
             end
         end
