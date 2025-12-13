@@ -6,7 +6,7 @@
 
 module mkMACBuff_TB;
 
-localparam NUM_ITERS = 4;
+localparam NUM_ITERS = 8;
 localparam ADDR_WIDTH = 6;
 localparam ADDR_DEPTH = 64;
 reg CLK;
@@ -27,7 +27,7 @@ logic unsigned RDY_mac, EN_readMem, EN_writeMem, VALID_memVal, RDY_blockRead;
 logic unsigned [31:0] writeMem_val, readMem_val, memVal_data;
 logic unsigned [5:0] writeMem_addr, readMem_addr;
 
-int stored_val[100];
+logic unsigned [31:0] stored_val[100];
 
 
 // instantiation
@@ -49,7 +49,7 @@ mkMACBuff mkMACBuff(
     );
     
 // memory wrapper
-memory_wrapper_2port #( .DEPTH(64), .LOGDEPTH(6), .WIDTH(32)) 
+memory_wrapper_2port #( .DEPTH(64), .LOGDEPTH(6), .WIDTH(34)) 
             memory_2port ( 
                 .clkA(CLK), .aA(readMem_addr), .cenA(~EN_readMem), .q(readMem_val),
                 .clkB(CLK), .aB(writeMem_addr), .cenB(~EN_writeMem), .d(writeMem_val)
@@ -80,10 +80,10 @@ endtask
 task TASK_reset;
 begin
     RESET = 1'b0;
-    @(negedge CLK);
+    @(posedge CLK); #0.2;
     RESET = 1'b1;
-    @(negedge CLK);
-    @(negedge CLK);
+    @(posedge CLK); #0.2;
+    @(posedge CLK); #0.2;
     RESET = 1'b0;
 end
 endtask
@@ -96,13 +96,14 @@ logic expMACOut;
 integer j;
 begin
     wait(RDY_mac === 1'b1);
-    @(negedge CLK);
+    @(posedge CLK); #0.2;
 
     for (j = 0; j < NUM_ITERS; j = j + 1) begin
         $display("========== Starting iter %d =========", j);
-        if (j % 2 == 0) memfill(j);
+	if (j % 2 == 0) memfill(j + 1);
         else memfill_rand();
-        readmem();
+
+	readmem();
     end
 end
 endtask
@@ -129,7 +130,7 @@ task automatic memfill (input int unsigned k);
     int unsigned j2 = 0;
     int unsigned j3 = 0;
     $display("memfill");
-    @(negedge CLK);
+    @(posedge CLK); #0.2;
     EN_mac = 1'b1;
 
     while (RDY_mac) begin
@@ -152,7 +153,7 @@ task automatic memfill (input int unsigned k);
         mac_vectB_2 = j2; 
         mac_vectB_3 = j3; 
         stored_val[i] = i0*j0 + i1*j1 + i2*j2 + i3*j3;
-	@(negedge CLK);
+    	@(posedge CLK); #0.2;
         i++;
     end
 endtask
@@ -170,7 +171,7 @@ task automatic memfill_rand ();
     int unsigned j2 = 0;
     int unsigned j3 = 0;
     $display("memfill_rand");
-    @(negedge CLK);
+    @(posedge CLK); #0.2;
     EN_mac = 1'b1;
 
     while (RDY_mac) begin
@@ -193,7 +194,7 @@ task automatic memfill_rand ();
         mac_vectB_2 = j2; 
         mac_vectB_3 = j3; 
         stored_val[i] = (i0*j0 + i1*j1 + i2*j2 + i3*j3) & 32'hFFFFFFFF;
-        @(negedge CLK);
+        @(posedge CLK); #0.2;
         i++;
 
         if (i > 64) break;
@@ -204,7 +205,7 @@ endtask
 
 task automatic readmem(); 
     wait(RDY_blockRead);
-    @(negedge CLK);
+    @(posedge CLK); #0.2;
 
     EN_blockRead = 1'b1;
 
@@ -213,13 +214,13 @@ task automatic readmem();
 
     EN_blockRead = 1'b0;
     for (int i = 0; i <= 64; i++) begin
-        @(negedge CLK);
         
         if (i < 64) begin
             assert(readMem_val === stored_val[i]) 
             else $error("readMem_val = %d, stored_val[%d] = %d", 
                         readMem_val, i, stored_val[i]);
         end
+	@(posedge CLK); #0.2;
     end
 endtask
 

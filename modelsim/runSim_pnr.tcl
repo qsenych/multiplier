@@ -35,7 +35,6 @@ add wave -label readMem_val -position insertpoint sim:/$TB_NAME/readMem_val
 add wave -label memVal_data -position insertpoint sim:/$TB_NAME/memVal_data
 add wave -label stored_val -position insertpoint sim:/$TB_NAME/stored_val
 add wave -label curr_state -position insertpoint sim:/$TB_NAME/$TOP_LEVEL/curr_state
-add wave -label next_state -position insertpoint sim:/$TB_NAME/$TOP_LEVEL/next_state
 
 add wave -divider pipeline_control
 add wave -label pipe0_en -position insertpoint sim:/$TB_NAME/$TOP_LEVEL/pipe0_en
