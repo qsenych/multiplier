@@ -1,6 +1,6 @@
 # 0) Prep - a) folders to point to the synthesis outputs
-set PNR_OUT_FOLDER /ubc/ece/home/ss/grads/avilash/Projects/elec402-intro-to-vlsi/multiplier-module/pnr/output
-set SYNTH_OUT_FOLDER /ubc/ece/home/ss/grads/avilash/Projects/elec402-intro-to-vlsi/multiplier-module/syn/outputs
+set PNR_OUT_FOLDER /ubc/ece/home/ugrads/q/qsenych/402ELEC/p3/pnr/outputs
+set SYNTH_OUT_FOLDER /ubc/ece/home/ugrads/q/qsenych/402ELEC/p3/syn/outputs
 
 # 0) Prep - b) library timing, lef folders
 set LIB_FOLDER /ubc/ece/data/cmc2/kits/GPDK45/gsclib045_all_v4.4/gsclib045/timing
@@ -8,8 +8,8 @@ set RCTECH_FOLDER /ubc/ece/data/cmc2/kits/GPDK45/gsclib045_all_v4.4/gsclib045/qr
 set LEF_FOLDER /ubc/ece/data/cmc2/kits/GPDK45/gsclib045_all_v4.4/gsclib045/lef
 
 # 0) Prep - c) specifiers for the design, versioning etc
-set TOP_LEVEL "CHANGE THIS"
-set RUN_NAME "CHANGE_THIS IF VERSIONING"
+set TOP_LEVEL "mkMACBuff"
+set RUN_NAME "p3"
 
 setMultiCpuUsage -localCpu 1
 setDesignMode -process 45 -node "unspecified"
@@ -19,7 +19,7 @@ setDesignMode -process 45 -node "unspecified"
 set init_lef_file [list "$LEF_FOLDER/gsclib045_tech.lef" "$LEF_FOLDER/gsclib045_macro.lef"]
 
 set init_verilog [list "$SYNTH_OUT_FOLDER/${TOP_LEVEL}_${RUN_NAME}_map.sv"]
-set init_top_cell mkMultBuff
+set init_top_cell mkMACBuff
 
 set init_pwr_net "VDD"
 set init_gnd_net "VSS"
@@ -36,7 +36,7 @@ setFPlanMode -snapDieGrid manufacturing
 setFPlanMode -snapCoreGrid manufacturing
 
 # Floorplan -> args for -r flag -- {aspect ratio, utilization, margins on [Left Bottom Right Top]
-floorPlan -site CoreSite -r 1 0.75 8 8 8 8
+floorPlan -site CoreSite -r 1 0.7 8 8 8 8
 
 # 2b) connecting the global power nets to the power nets on gates/tie-hi or tie-lo
 globalNetConnect VDD -type pgpin -pin VDD -instanceBasename * -hierarchicalInstance {}
@@ -47,7 +47,7 @@ globalNetConnect VSS -type tielo -instanceBasename * -hierarchicalInstance {}
 # 2c) Adding the power ring
 setAddRingMode -ring_target default -extend_over_row 0 -ignore_rows 0 -avoid_short 0 -skip_crossing_trunks "none" -stacked_via_top_layer "Metal11" -stacked_via_bottom_layer "Metal1" -via_using_exact_crossover_size 1 -orthogonal_only true -skip_via_on_pin {  standardcell } -skip_via_on_wire_shape {  noshape }
 
-addRing -nets [list "VDD" "VSS"] -type core_rings -follow "core" -layer {top "Metal5" bottom "Metal5" left "Metal6" right "Metal6"} -width {top 0 bottom 0 left 0 right 0} -spacing {top 0.45 bottom 0.45 left 0.45 right 0.45} -offset {top 1.8 bottom 1.8 left 1.8 right 1.8} -center 0 -threshold 0 -jog_distance 0 -snap_wire_center_to_grid "None"
+addRing -nets [list "VDD" "VSS"] -type core_rings -follow "core" -layer {top "Metal7" bottom "Metal7" left "Metal8" right "Metal8"} -width {top 1.8 bottom 1.8 left 1.8 right 1.8} -spacing {top 0.45 bottom 0.45 left 0.45 right 0.45} -offset {top 1.8 bottom 1.8 left 1.8 right 1.8} -center 0 -threshold 0 -jog_distance 0 -snap_wire_center_to_grid "None"
 
 # 2d) sroute for making the horizontal power tracks
 setSrouteMode -viaConnectToShape { noshape }
@@ -57,7 +57,7 @@ sroute -connect { blockPin padPin padRing corePin floatingStripe } -layerChangeR
 # 2e) Adding power stripes 
 setAddStripeMode -ignore_block_check false -break_at none -route_over_rows_only false -rows_without_stripes_only false -extend_to_closest_target none -stop_at_last_wire_for_area false -partial_set_thru_domain false -ignore_nondefault_domains false -trim_antenna_back_to_shape none -spacing_type edge_to_edge -spacing_from_block 0 -stripe_min_length stripe_width -stacked_via_top_layer Metal11 -stacked_via_bottom_layer Metal1 -via_using_exact_crossover_size false -split_vias false -orthogonal_only true -allow_jog { padcore_ring  block_ring } -skip_via_on_pin { standardcell } -skip_via_on_wire_shape { noshape }
 
-addStripe -nets [list "VDD" "VSS"] -layer "Metal6" -direction vertical -width 0 -spacing 0.45 -number_of_sets 4 -start_from left -start_offset 3 -switch_layer_over_obs false -max_same_layer_jog_length 2 -padcore_ring_top_layer_limit Metal11 -padcore_ring_bottom_layer_limit Metal1 -block_ring_top_layer_limit Metal11 -block_ring_bottom_layer_limit Metal1 -use_wire_group 0 -snap_wire_center_to_grid None
+addStripe -nets [list "VDD" "VSS"] -layer "Metal8" -direction vertical -width 0 -spacing 0.45 -number_of_sets 4 -start_from left -start_offset 3 -switch_layer_over_obs false -max_same_layer_jog_length 2 -padcore_ring_top_layer_limit Metal11 -padcore_ring_bottom_layer_limit Metal1 -block_ring_top_layer_limit Metal11 -block_ring_bottom_layer_limit Metal1 -use_wire_group 0 -snap_wire_center_to_grid None
 
 
 # 2f) Pin placement
@@ -65,14 +65,17 @@ setPinAssignMode -pinEditInBatch true
 
 # NOTE: The command below spreads all the wires on the Right edge of the floorplan
 #editPin -snap MGRID -fixOverlap 1 -spreadDirection clockwise -side Right -layer 3 -spreadType range -start 0 10.0 -end 0 65.0 -pin {CLK RST_N EN_blockRead EN_mult RDY_mult EN_readMem EN_writeMem writeMem_addr* memVal_data* mult_input* readMem_addr* RDY_blockRead VALID_memVal readMem_val* writeMem_val* }
+editPin -snap MGRID -fixOverlap 1 -spreadDirection clockwise -side Left -layer 3 -spreadType range -start 0 96.0 -end 0 180.0 -pin {RDY_mac EN_mac mac_vect*}
 
-editPin -snap MGRID -fixOverlap 1 -spreadDirection clockwise -side Left -layer 3 -spreadType range -start 0 2.0 -end 0 32.0 -pin {VALID_memVal memVal_data*}
+editPin -snap MGRID -fixOverlap 1 -spreadDirection clockwise -side Left -layer 3 -spreadType range -start 0 2.0 -end 0 64.0 -pin {VALID_memVal memVal_data*}
 
-editPin -snap MGRID -fixOverlap 1 -spreadDirection clockwise -side Left -layer 3 -spreadType range -start 0 34.0 -end 0 36.0 -pin {CLK RST_N}
+editPin -snap MGRID -fixOverlap 1 -spreadDirection clockwise -side Left -layer 3 -spreadType range -start 0 88.0 -end 0 92.0 -pin {CLK RST_N}
 
-editPin -snap MGRID -fixOverlap 1 -spreadDirection clockwise -side Left -layer 3 -spreadType range -start 0 38.0 -end 0 40.0 -pin {EN_blockRead RDY_blockRead}
+editPin -snap MGRID -fixOverlap 1 -spreadDirection clockwise -side Left -layer 3 -spreadType range -start 0 66.0 -end 0 76.0 -pin {EN_blockRead RDY_blockRead}
 
-editPin -pinWidth 0.08 -pinDepth 0.25 -snap MGRID -fixOverlap 1 -spreadDirection counterclockwise -side Right -layer 3 -spreadType range -start 81.645 10 -end 81.645 35 -pin {EN_readMem readMem_addr* readMem_val*}
+editPin -pinWidth 0.08 -pinDepth 0.25 -snap MGRID -fixOverlap 1 -spreadDirection counterclockwise -side Right -layer 3 -spreadType range -start 188.89 50.0 -end 188.89 70.0 -pin {EN_readMem readMem_addr* readMem_val*}
+
+editPin -pinWidth 0.08 -pinDepth 0.25 -snap MGRID -fixOverlap 1 -spreadDirection counterclockwise -side Right -layer 3 -spreadType range -start 188.89 130.0 -end 188.89 150.0 -pin {EN_writeMem writeMem_addr* writeMem_val*}
 
 setPinAssignMode -pinEditInBatch false
 
@@ -108,7 +111,6 @@ report_timing -nworst 5 > ./reports/${TOP_LEVEL}_preCTS.rpt
 
 # Saving design after placement
 saveDesign chkpts/${TOP_LEVEL}_preCTS
-
 #################################################################################
 # 4) Clock Tree Synthesis
 reset_ccopt_config
@@ -126,7 +128,7 @@ set_ccopt_property max_fanout 4
 set_ccopt_property target_max_trans 0.25
 set_ccopt_property buffer_cells {CLKBUFX2 CLKBUFX3 CLKBUFX4 CLKBUFX8 CLKBUFX12 CLKBUFX16}
 
-create_route_type -name CLKRouteType -top_preferred_layer MetalY -bottom_preferred_layer MetalX 
+create_route_type -name CLKRouteType -top_preferred_layer Metal7 -bottom_preferred_layer Metal4 
 set_ccopt_property route_type CLKRouteType
 
 # 4c) Skew group to balance non generated clock:CLK in timing_config:cmFunc 
@@ -152,6 +154,7 @@ report_timing -nworst 5 > ./reports/${TOP_LEVEL}_postCTS.rpt
 # Saving design after CTS
 saveDesign chkpts/${TOP_LEVEL}_postCTS
 
+return
 #################################################################################
 # 5) Routing
 
