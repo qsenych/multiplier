@@ -1,10 +1,10 @@
 set TOP_LEVEL "mkMACBuff"
 set TB_NAME ${TOP_LEVEL}_TB
 
-set SDF_FOLDER "/ubc/ece/home/ugrads/q/qsenych/402ELEC/p3/pnr/outputs"
+set SDF_FOLDER "/ubc/ece/home/ugrads/q/qsenych/402ELEC/p3/syn/outputs"
 
 # Starting the simulator
-vsim -default_radix unsigned -voptargs=+acc -sdfnoerror -sdfmax /$TB_NAME/$TOP_LEVEL=$SDF_FOLDER/${TOP_LEVEL}_pnr.sdf -l $TB_NAME.sim.log work.${TB_NAME} 
+vsim -default_radix unsigned -voptargs=+acc -sdfnoerror -sdfmax /$TB_NAME/$TOP_LEVEL=$SDF_FOLDER/${TOP_LEVEL}_map_p3.sdf -l $TB_NAME.sim.log work.${TB_NAME} 
 
 # Open the vcd file to write the waveforms to
 vcd file ${TOP_LEVEL}.vcd

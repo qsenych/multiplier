@@ -93,6 +93,7 @@ if { $RUN_NAME == "p3" } {
 	set inputs_no_clk_rstn [remove_from_collection [all_inputs] [get_ports "$clk_pin $rstn_pin"]]
 	
 	create_clock [get_ports $clk_pin] -name $clk_pin -period $clk_period
+	create_clock -period $clk_period -name io_virtual_clk
 
 	set_clock_uncertainty [expr $quarter ] [get_clocks $clk_pin]
 	set_clock_latency [expr $quarter] [get_clocks $clk_pin]
@@ -102,8 +103,8 @@ if { $RUN_NAME == "p3" } {
 	set_load [expr [load_of [get_lib_pins */NAND2X4/A]] * 4] [all_outputs]
 	set_max_fanout 4 $inputs_no_clk_rstn
 
-	create_clock -period $clk_period -name io_virtual_clk
 	set_input_delay -max [ expr $quarter ] -clock io_virtual_clk -add_delay $inputs_no_clk_rstn
 	set_output_delay -max [ expr $quarter ] -clock io_virtual_clk -add_delay [all_outputs]
+	
 
 }

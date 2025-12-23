@@ -38,6 +38,7 @@ report_area > ./reports/${TOP_LEVEL}_${RUN_NAME}_area.rpt
 report_gates > ./reports/${TOP_LEVEL}_${RUN_NAME}_gates.rpt   
 report_timing > ./reports/${TOP_LEVEL}_${RUN_NAME}_timing.rpt 
 report_power > ./reports/${TOP_LEVEL}_${RUN_NAME}_power.rpt
+report_qor > ./reports/${TOP_LEVEL}_${RUN_NAME}_qor.rpt
 
 write_hdl -mapped > ./outputs/${TOP_LEVEL}_${RUN_NAME}_map.sv 
 write_sdc  > ./outputs/${TOP_LEVEL}_${RUN_NAME}_map.sdc 
